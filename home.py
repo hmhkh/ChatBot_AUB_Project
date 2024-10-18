@@ -4,7 +4,6 @@ from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-import fitz  # PyMuPDF
 import os
 
 load_dotenv()
@@ -13,25 +12,22 @@ load_dotenv()
 st.set_page_config(page_title="Streaming bot", page_icon="📄")
 st.title("Streaming bot")
 
-# Directory to store uploaded PDF files
+# Directory to store uploaded TXT files
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-def extract_text_from_pdf(pdf_path):
-    doc = fitz.open(pdf_path)
-    text = ""
-    for page in doc:
-        text += page.get_text()
-    return text
+def extract_text_from_txt(txt_path):
+    with open(txt_path, 'r', encoding='utf-8') as file:
+        return file.read()
 
-def find_answer_from_pdf(pdf_path, query):
-    text = extract_text_from_pdf(pdf_path)
+def find_answer_from_txt(txt_path, query):
+    text = extract_text_from_txt(txt_path)
     if query.lower() in text.lower():
         start_index = text.lower().find(query.lower())
         end_index = start_index + 200  # Arbitrary length for demo purposes
         return text[start_index:end_index]
     else:
-        return "لم يتم العثور على الإجابة في ملف PDF."
+        return "لم يتم العثور على الإجابة في الملف النصي."
 
 def get_response(user_query, chat_history):
     template = """Use the following pieces of context to answer the question at the end. 
@@ -43,38 +39,38 @@ def get_response(user_query, chat_history):
     llm = ChatOpenAI()
     chain = prompt | llm | StrOutputParser()
 
-    # Find answer in PDF files
-    pdf_files = [os.path.join(UPLOAD_FOLDER, f) for f in os.listdir(UPLOAD_FOLDER) if f.endswith('.pdf')]
-    for pdf_file in pdf_files:
-        answer = find_answer_from_pdf(pdf_file, user_query)
-        if "لم يتم العثور على الإجابة في ملف PDF." not in answer:
+    # Find answer in TXT files
+    txt_files = [os.path.join(UPLOAD_FOLDER, f) for f in os.listdir(UPLOAD_FOLDER) if f.endswith('.txt')]
+    for txt_file in txt_files:
+        answer = find_answer_from_txt(txt_file, user_query)
+        if "لم يتم العثور على الإجابة في الملف النصي." not in answer:
             break
 
-    # Combine PDF answer with language model response
+    # Combine TXT answer with language model response
     return chain.stream({
         "chat_history": chat_history,
         "user_question": user_query,
-        "pdf_answer": answer
+        "txt_answer": answer
     })
 
-# Sidebar components for PDF management
-st.sidebar.header("Manage PDF Files")
+# Sidebar components for TXT management
+st.sidebar.header("Manage TXT Files")
 
-# Upload PDF
-uploaded_file = st.sidebar.file_uploader("Upload a PDF file", type="pdf")
+# Upload TXT
+uploaded_file = st.sidebar.file_uploader("Upload a TXT file", type="txt")
 if uploaded_file is not None:
     with open(os.path.join(UPLOAD_FOLDER, uploaded_file.name), "wb") as f:
         f.write(uploaded_file.getbuffer())
     st.sidebar.success(f"Uploaded {uploaded_file.name}")
 
-# List PDF files
-if st.sidebar.button("List PDF files"):
+# List TXT files
+if st.sidebar.button("List TXT files"):
     files = os.listdir(UPLOAD_FOLDER)
     st.sidebar.write(files)
 
-# Delete PDF file
-delete_filename = st.sidebar.text_input("Enter the name of the PDF file to delete")
-if st.sidebar.button("Delete PDF file"):
+# Delete TXT file
+delete_filename = st.sidebar.text_input("Enter the name of the TXT file to delete")
+if st.sidebar.button("Delete TXT file"):
     if delete_filename:
         file_path = os.path.join(UPLOAD_FOLDER, delete_filename)
         if os.path.exists(file_path):
