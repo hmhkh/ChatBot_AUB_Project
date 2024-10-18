@@ -6,8 +6,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 import os
 
-openai_api_key = st.secrets["general"]["OPENAI_API_KEY"]
-
 # App configs
 st.set_page_config(page_title="Streaming bot", page_icon="📄")
 st.title("Streaming bot")
@@ -36,7 +34,7 @@ def get_response(user_query, chat_history):
     User question: {user_question}
     Helpful Answer:"""
     prompt = ChatPromptTemplate.from_template(template)
-    llm = ChatOpenAI()
+    llm = ChatOpenAI(api_key=st.secrets["general"]["OPENAI_API_KEY"])
     chain = prompt | llm | StrOutputParser()
 
     # Find answer in TXT files
