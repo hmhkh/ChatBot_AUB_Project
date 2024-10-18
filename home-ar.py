@@ -6,11 +6,24 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 import os
 
-openai.api_key = st.secrets["openai_key"]
+load_dotenv()
 
 # App configs
 st.set_page_config(page_title="Streaming bot", page_icon="📄")
-st.title("Streaming bot")
+st.title("بوت البث")
+
+# Apply RTL styling
+st.markdown(
+    """
+    <style>
+    body {
+        direction: RTL;
+        text-align: right;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # Directory to store uploaded TXT files
 UPLOAD_FOLDER = 'uploads'
@@ -54,30 +67,30 @@ def get_response(user_query, chat_history):
     })
 
 # Sidebar components for TXT management
-st.sidebar.header("Manage TXT Files")
+st.sidebar.header("إدارة الملفات النصية")
 
 # Upload TXT
-uploaded_file = st.sidebar.file_uploader("Upload a TXT file", type="txt")
+uploaded_file = st.sidebar.file_uploader("تحميل ملف نصي", type="txt")
 if uploaded_file is not None:
     with open(os.path.join(UPLOAD_FOLDER, uploaded_file.name), "wb") as f:
         f.write(uploaded_file.getbuffer())
-    st.sidebar.success(f"Uploaded {uploaded_file.name}")
+    st.sidebar.success(f"تم تحميل {uploaded_file.name}")
 
 # List TXT files
-if st.sidebar.button("List TXT files"):
+if st.sidebar.button("عرض الملفات النصية"):
     files = os.listdir(UPLOAD_FOLDER)
     st.sidebar.write(files)
 
 # Delete TXT file
-delete_filename = st.sidebar.text_input("Enter the name of the TXT file to delete")
-if st.sidebar.button("Delete TXT file"):
+delete_filename = st.sidebar.text_input("أدخل اسم الملف النصي للحذف")
+if st.sidebar.button("حذف الملف النصي"):
     if delete_filename:
         file_path = os.path.join(UPLOAD_FOLDER, delete_filename)
         if os.path.exists(file_path):
             os.remove(file_path)
-            st.sidebar.success(f"Deleted {delete_filename}")
+            st.sidebar.success(f"تم حذف {delete_filename}")
         else:
-            st.sidebar.error(f"{delete_filename} not found")
+            st.sidebar.error(f"لم يتم العثور على {delete_filename}")
 
 # Session state
 if "chat_history" not in st.session_state:
