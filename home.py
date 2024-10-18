@@ -6,7 +6,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 import os
 
-openai.api_key = st.secrets["openai_key"]
+openai_api_key = st.secrets["general"]["OPENAI_API_KEY"]
 
 # App configs
 st.set_page_config(page_title="Streaming bot", page_icon="📄")
